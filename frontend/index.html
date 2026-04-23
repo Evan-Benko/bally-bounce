@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ball Game</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg-1: #050816;
+            --bg-2: #090f2d;
+            --grid: rgba(122, 255, 247, 0.08);
+            --panel: rgba(6, 12, 34, 0.72);
+            --text: #d8f6ff;
+            --muted: #7eb3c7;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top, rgba(24, 77, 145, 0.45), transparent 34%),
+                radial-gradient(circle at bottom, rgba(255, 0, 140, 0.18), transparent 30%),
+                linear-gradient(180deg, var(--bg-2), var(--bg-1));
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 85%);
+            pointer-events: none;
+        }
+
+        #app {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #hud {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            padding: 12px 16px;
+            border: 1px solid rgba(126, 255, 241, 0.2);
+            border-radius: 14px;
+            background: var(--panel);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 24px rgba(36, 211, 255, 0.16);
+            z-index: 2;
+        }
+
+        #hud h1 {
+            margin: 0 0 6px;
+            font-size: 15px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        #hud p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        #auth-panel {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: min(340px, calc(100vw - 36px));
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 60, 166, 0.18);
+            border-radius: 16px;
+            background: rgba(6, 12, 34, 0.82);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 28px rgba(255, 60, 166, 0.12);
+            z-index: 2;
+        }
+
+        #auth-panel h2 {
+            margin: 0 0 8px;
+            font-size: 15px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        #auth-panel p {
+            margin: 0 0 12px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        #auth-status {
+            min-height: 18px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #f8fbff;
+        }
+
+        #lobby-status {
+            min-height: 18px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        #join-button {
+            width: 100%;
+            margin-top: 12px;
+            padding: 11px 14px;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #29e7ff, #ff3ca6);
+            color: #04111f;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        #join-button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        #winner-panel {
+            position: absolute;
+            left: 18px;
+            bottom: 18px;
+            padding: 14px 16px;
+            border: 1px solid rgba(178, 255, 67, 0.24);
+            border-radius: 16px;
+            background: rgba(6, 12, 34, 0.82);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 28px rgba(178, 255, 67, 0.12);
+            z-index: 2;
+        }
+
+        #winner-panel h2 {
+            margin: 0 0 6px;
+            font-size: 14px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        #winner-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f7fdff;
+        }
+
+        #labels {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .ball-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            color: #f7fdff;
+            text-shadow:
+                0 0 8px rgba(119, 239, 255, 0.85),
+                0 0 18px rgba(119, 239, 255, 0.35);
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="hud">
+        <h1>Neon Lottery Arena</h1>
+        <p>Spheres intensify as they drift away from center.</p>
+    </div>
+    <div id="auth-panel">
+        <h2>Join The Draw</h2>
+        <p>Sign in with Google so your ball uses your verified account name.</p>
+        <div id="auth-status">Loading sign-in…</div>
+        <div id="lobby-status">Waiting for lobby info…</div>
+        <div id="google-signin"></div>
+        <button id="join-button" disabled>Join Round</button>
+    </div>
+    <div id="winner-panel">
+        <h2>Previous Winner</h2>
+        <div id="winner-name">No winner yet</div>
+    </div>
+    <div id="labels"></div>
+</div>
+
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="game.js"></script>
+</body>
+</html>
